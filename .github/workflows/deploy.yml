@@ -4,7 +4,7 @@ name: Update family tree
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 * * * *"
+    - cron: '17 * * * *'
 
 permissions:
   contents: read
@@ -12,7 +12,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: family-tree-pages
   cancel-in-progress: true
 
 jobs:
@@ -25,12 +25,18 @@ jobs:
       - name: Python setup
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: '3.12'
 
       - name: Generate family tree data
         env:
           SHEETS_CSV_URL: ${{ vars.SHEETS_CSV_URL }}
         run: python build.py
+
+      - name: Prepare static site
+        run: |
+          mkdir -p _site/data
+          cp index.html _site/index.html
+          cp data/people.json _site/data/people.json
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
@@ -38,8 +44,7 @@ jobs:
       - name: Upload website
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: _site
 
       - name: Deploy website
-        id: deployment
         uses: actions/deploy-pages@v4
